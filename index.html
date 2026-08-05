@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Archive — chorale</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#F6F7F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12161B" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Archive">
+<script>
+  // Applique le thème avant le premier rendu pour éviter tout flash de la mauvaise couleur.
+  (function(){
+    try{
+      var saved = localStorage.getItem('archive-theme');
+      var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    }catch(e){ document.documentElement.setAttribute('data-theme','light'); }
+  })();
+</script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+:root{
+  --paper: #F6F7F5;
+  --paper-deep: #EBEDE9;
+  --card: #FFFFFF;
+  --ink: #16202B;
+  --ink-soft: #5B6672;
+  --stamp-red: #6E2A35;
+  --brass: #96751F;
+  --line: #E2E5E1;
+  --line-soft: #EDEFEC;
+  --soprano-color: #3E5C76;
+  --alto-color: #6E2A35;
+  --tenor-color: #96751F;
+  --basse-color: #2F5D50;
+  --focus: #2B6CB0;
+  --radius: 10px;
+  --shadow-sm: 0 1px 2px rgba(20,24,28,.05), 0 2px 6px rgba(20,24,28,.05);
+  --shadow-md: 0 2px 6px rgba(20,24,28,.06), 0 10px 24px rgba(20,24,28,.08);
+}
+
+html[data-theme="dark"]{
+  --paper: #12161B;
+  --paper-deep: #1B2027;
+  --card: #1B2027;
+  --ink: #EDEFEF;
+  --ink-soft: #9AA3AC;
+  --stamp-red: #C97C86;
+  --brass: #D1A94A;
+  --line: #2A3038;
+  --line-soft: #232931;
+  --soprano-color: #7CA3C4;
+  --alto-color: #C97C86;
+  --tenor-color: #D1A94A;
+  --basse-color: #6FB39D;
+  --focus: #6FB1FF;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.3), 0 2px 6px rgba(0,0,0,.25);
+  --shadow-md: 0 4px 10px rgba(0,0,0,.35), 0 16px 32px rgba(0,0,0,.4);
+}
+
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  background-color:var(--paper);
+  color:var(--ink);
+  font-family:'Inter',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  transition:background-color .2s ease, color .2s ease;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+}
+
+:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+
+.app{
+  position:relative; z-index:1;
+  max-width:1180px;
+  margin:0 auto;
+  padding:28px 24px 80px;
+}
+
+#driveStatusPill{
+  display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:.6rem;
+  text-transform:uppercase; letter-spacing:.06em; padding:1px 6px; border-radius:8px;
+  background:var(--paper-deep); margin-left:2px;
+}
+#driveStatusPill.connected{ background:color-mix(in srgb, var(--basse-color) 18%, transparent); color:var(--basse-color); }
+#driveStatusPill.error{ background:color-mix(in srgb, var(--stamp-red) 18%, transparent); color:var(--stamp-red); }
+
+.sync-badge{
+  position:absolute; top:-8px; left:-8px; font-size:.85rem;
+  background:var(--card); border-radius:50%; width:22px; height:22px;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--line); cursor:default;
+}
+.sync-badge.clickable{ cursor:pointer; }
+.sync-badge[data-status="syncing"]{ animation:spin 1.2s linear infinite; }
+@keyframes spin{ from{ transform:rotate(0deg);} to{ transform:rotate(360deg);} }
+.list-sync{ font-size:.9rem; margin-right:4px; }
+
+/* ---------- Header ---------- */
+header.top{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:20px; flex-wrap:wrap;
+  border-bottom:1px solid var(--line);
+  padding-bottom:18px;
+  margin-bottom:28px;
+}
+.brand{ display:flex; align-items:center; gap:12px; }
+.staff-mark{ display:block; flex:0 0 auto; }
+.staff-mark line{ stroke:var(--line); stroke-width:1.4; }
+.staff-mark circle{ fill:var(--stamp-red); }
+.brand h1{
+  font-family:'Fraunces',serif; font-weight:600; font-optical-sizing:auto;
+  font-size:1.5rem; margin:0; letter-spacing:.01em; color:var(--ink);
+}
+.brand .tag{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.65rem; text-transform:uppercase; letter-spacing:.1em;
+  color:var(--ink-soft);
+}
+.searchwrap{
+  flex:1; min-width:220px; max-width:380px;
+  position:relative;
+}
+.searchwrap label{
+  display:block; font-family:'IBM Plex Mono',monospace; font-size:.63rem;
+  text-transform:uppercase; letter-spacing:.12em; color:var(--ink-soft); margin-bottom:5px;
+}
+.searchwrap input{
+  width:100%; padding:9px 12px; font-size:.9rem; font-family:'Inter',sans-serif;
+  border:1px solid var(--line); border-radius:var(--radius); background:var(--card); color:var(--ink);
+  transition:border-color .15s, box-shadow .15s;
+}
+.searchwrap input:focus{ border-color:var(--focus); box-shadow:0 0 0 3px color-mix(in srgb, var(--focus) 20%, transparent); outline:none; }
+.searchwrap input::placeholder{ color:var(--ink-soft); opacity:.8; }
+
+.header-actions{ display:flex; align-items:center; gap:8px; }
+.theme-toggle{
+  all:unset; cursor:pointer; width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--line); border-radius:50%; color:var(--ink-soft); background:var(--card);
+  transition:border-color .15s, color .15s;
+}
+.theme-toggle:hover{ color:var(--ink); border-color:var(--ink-soft); }
+.theme-toggle svg{ width:17px; height:17px; }
+
+#reconnectBanner{
+  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  background:color-mix(in srgb, var(--stamp-red) 10%, var(--card));
+  border:1px solid color-mix(in srgb, var(--stamp-red) 30%, var(--line));
+  border-radius:var(--radius); padding:10px 14px; margin-bottom:20px;
+  font-family:'Inter',sans-serif; font-size:.85rem; color:var(--ink);
+}
+#reconnectBanner button{
+  all:unset; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:.72rem;
+  text-transform:uppercase; letter-spacing:.06em; padding:6px 14px; border-radius:var(--radius);
+  background:var(--stamp-red); color:var(--card); white-space:nowrap;
+}
+
+/* ---------- Breadcrumb ---------- */
+.breadcrumb{
+  display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;
+}
+.breadcrumb .back{
+  all:unset; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:.75rem;
+  color:var(--ink-soft); text-decoration:underline; text-underline-offset:2px;
+}
+.breadcrumb .back:hover{ color:var(--ink); }
+.breadcrumb h2{ font-family:'Fraunces',serif; margin:0; font-size:1.5rem; }
+.breadcrumb .sep{ color:var(--line); }
+
+/* ---------- Folders screen ---------- */
+.folders-intro{ margin-bottom:20px; }
+.folders-intro h2{ font-family:'Fraunces',serif; font-weight:600; margin:0 0 4px; font-size:1.4rem; }
+.folders-intro p{ margin:0; font-family:'IBM Plex Mono',monospace; font-size:.75rem; color:var(--ink-soft); }
+.folder-grid{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:16px;
+}
+.folder-card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  padding:18px 16px; cursor:pointer; position:relative;
+  box-shadow:var(--shadow-sm);
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.folder-card:hover{ transform:translateY(-2px); box-shadow:var(--shadow-md); border-color:var(--line-soft); }
+.folder-card .fglyph{ font-size:1.5rem; margin-bottom:10px; display:block; }
+.folder-card .fname{ font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; margin-bottom:4px; word-break:break-word; }
+.folder-card .fcount{ font-family:'IBM Plex Mono',monospace; font-size:.68rem; color:var(--ink-soft); }
+.folder-card .fvoices{ display:flex; gap:5px; margin-top:10px; }
+.folder-card .fvoices i{ width:7px; height:7px; border-radius:50%; display:inline-block; background:var(--line); }
+.folder-card .fvoices i.filled.soprano{ background:var(--soprano-color); }
+.folder-card .fvoices i.filled.alto{ background:var(--alto-color); }
+.folder-card .fvoices i.filled.tenor{ background:var(--tenor-color); }
+.folder-card .fvoices i.filled.basse{ background:var(--basse-color); }
+.folder-card .fdel{
+  position:absolute; top:10px; right:10px; all:unset; cursor:pointer;
+  font-family:'IBM Plex Mono',monospace; font-size:.62rem; color:var(--ink-soft);
+  text-decoration:underline; opacity:0; transition:opacity .12s;
+}
+.folder-card:hover .fdel{ opacity:1; }
+.folder-card.new{
+  border-style:dashed; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; color:var(--ink-soft); background:transparent; box-shadow:none;
+}
+.folder-card.new:hover{ background:var(--paper-deep); color:var(--ink); }
+
+/* ---------- Layout ---------- */
+.layout{ display:grid; grid-template-columns:210px 1fr; gap:24px; margin-top:24px; }
+@media (max-width:760px){ .layout{ grid-template-columns:1fr; } }
+
+/* ================= Mobile ================= */
+@media (max-width:640px){
+  .app{ padding:16px 14px 60px; }
+
+  header.top{ align-items:flex-start; padding-bottom:12px; margin-bottom:16px; gap:12px; }
+  .brand h1{ font-size:1.5rem; }
+  .brand .tag{ display:none; }
+  .searchwrap{ max-width:none; width:100%; }
+
+  .breadcrumb{ margin-bottom:14px; }
+  .breadcrumb h2{ font-size:1.15rem; }
+
+  .folders-intro h2{ font-size:1.15rem; }
+  .folder-grid{ grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:12px; }
+  .folder-card{ padding:14px 12px; }
+  .folder-card .fdel{ opacity:1; font-size:.6rem; }
+
+  .layout{ gap:14px; margin-top:14px; }
+  nav.drawer{
+    flex-direction:row; overflow-x:auto; gap:8px; padding-bottom:4px;
+    -webkit-overflow-scrolling:touch;
+  }
+  nav.drawer button{
+    flex:0 0 auto; white-space:nowrap; border-left:none; border-bottom:3px solid transparent;
+    border-radius:var(--radius); padding:8px 12px;
+  }
+  nav.drawer button[aria-pressed="true"]{ border-bottom-color:var(--stamp-red); box-shadow:none; }
+  .drawer-note{ display:none; }
+
+  .dropzone{ padding:16px 12px; margin-bottom:16px; }
+  .dropzone .slot{ font-size:.95rem; }
+  .btn{ padding:10px 16px; }
+
+  .toolbar{ margin-bottom:10px; }
+  .toolbar h2{ font-size:1.05rem; }
+  .viewtoggle button{ padding:8px 10px; }
+
+  .grid{ grid-template-columns:repeat(auto-fill,minmax(128px,1fr)); gap:12px; }
+  .card .thumb{ height:78px; }
+  .card .name{ font-size:.76rem; }
+  .delbtn{ opacity:1; font-size:.6rem; }
+
+  table.list td, table.list th{ padding:8px 8px; font-size:.78rem; }
+  table.list td.mono{ display:none; } /* cache colonnes secondaires sur petit écran */
+  table.list th:nth-child(3), table.list th:nth-child(4){ display:none; }
+
+  .overlay{ padding:0; align-items:stretch; }
+  .modal{
+    max-width:100%; width:100%; border-radius:0; box-shadow:none;
+    max-height:100dvh; height:100dvh; display:flex; flex-direction:column;
+    padding:16px;
+  }
+  .modal h3{ font-size:1.05rem; }
+  .modal .previewbox{ flex:1; min-height:0; margin:12px 0; }
+  .modal .actions{ flex-wrap:wrap; }
+  .modal .actions .btn, .modal .actions.between > div{ width:100%; }
+  .modal .actions.between{ flex-direction:column-reverse; gap:8px; }
+  .modal .actions.between > div{ display:flex; gap:8px; }
+  .modal .actions.between > div .btn{ flex:1; }
+
+  .modal.fullscreen{ height:100dvh; max-height:100dvh; }
+  .modal.fullscreen .previewbox video,
+  .modal.fullscreen .previewbox img{ max-height:100%; }
+
+  .toast{ left:14px; right:14px; transform:none; bottom:14px; text-align:center; }
+  .toast.show{ transform:translateY(-6px); }
+}
+
+/* ---------- Sidebar / drawer tabs ---------- */
+nav.drawer{ display:flex; flex-direction:column; gap:5px; }
+nav.drawer button{
+  all:unset; cursor:pointer;
+  display:flex; justify-content:space-between; align-items:center;
+  font-family:'Fraunces',serif; font-size:.98rem; font-weight:500;
+  padding:10px 14px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  color:var(--ink-soft);
+  transition:background-color .12s, border-color .12s, color .12s;
+}
+nav.drawer button .n{
+  font-family:'IBM Plex Mono',monospace; font-size:.7rem; color:var(--ink-soft);
+  background:var(--paper-deep); padding:1px 7px; border-radius:10px;
+}
+nav.drawer button:hover{ background:var(--paper-deep); }
+nav.drawer button[aria-pressed="true"]{
+  color:var(--ink); border-color:var(--stamp-red); font-weight:600;
+  background:color-mix(in srgb, var(--stamp-red) 6%, var(--card));
+}
+.drawer-note{
+  margin-top:18px; padding:12px 14px; border:1px dashed var(--line);
+  font-family:'IBM Plex Mono',monospace; font-size:.68rem; line-height:1.5;
+  color:var(--ink-soft); border-radius:var(--radius);
+}
+
+/* ---------- Main column ---------- */
+main{ min-width:0; }
+
+.toolbar{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:14px; gap:12px; flex-wrap:wrap;
+}
+.toolbar h2{
+  font-family:'Fraunces',serif; margin:0; font-size:1.3rem;
+}
+.viewtoggle{ display:flex; border:1px solid var(--ink); border-radius:var(--radius); overflow:hidden; }
+.viewtoggle button{
+  all:unset; cursor:pointer; padding:7px 13px; font-family:'IBM Plex Mono',monospace;
+  font-size:.72rem; text-transform:uppercase; letter-spacing:.08em;
+  color:var(--ink-soft); background:var(--card);
+}
+.viewtoggle button + button{ border-left:1px solid var(--ink); }
+.viewtoggle button[aria-pressed="true"]{ background:var(--ink); color:var(--card); }
+
+/* ---------- Dropzone ---------- */
+.dropzone{
+  border:2px dashed var(--line);
+  border-radius:var(--radius);
+  padding:22px 18px;
+  text-align:center;
+  margin-bottom:22px;
+  background:repeating-linear-gradient(135deg, rgba(0,0,0,.015) 0 10px, transparent 10px 20px);
+  transition:border-color .15s, background-color .15s;
+}
+.dropzone.drag{ border-color:var(--stamp-red); background-color:color-mix(in srgb, var(--stamp-red) 8%, var(--paper)); }
+.dropzone p{ margin:0 0 10px; font-family:'IBM Plex Mono',monospace; font-size:.78rem; color:var(--ink-soft); }
+.dropzone .slot{
+  font-family:'Fraunces',serif; font-size:1.05rem; margin-bottom:6px; color:var(--ink);
+}
+.btn{
+  all:unset; cursor:pointer;
+  font-family:'IBM Plex Mono',monospace; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em;
+  padding:9px 18px; border-radius:var(--radius); border:1.5px solid var(--ink);
+  background:var(--ink); color:var(--card);
+  transition:filter .12s ease, background-color .15s ease, border-color .15s ease;
+}
+.btn:hover{ filter:brightness(0.88); }
+.btn.ghost{ background:transparent; color:var(--ink); }
+.btn.ghost:hover{ background:var(--paper-deep); }
+.btn.danger{ border-color:var(--stamp-red); background:var(--stamp-red); }
+.btn.danger:hover{ filter:brightness(0.88); }
+.btn.small{ padding:5px 11px; font-size:.66rem; }
+input[type=file]{ display:none; }
+
+/* ---------- Empty state ---------- */
+.empty{
+  text-align:center; padding:50px 20px; color:var(--ink-soft);
+  border:1px solid var(--line-soft); border-radius:var(--radius); background:var(--card);
+}
+.empty .glyph{ font-size:2rem; margin-bottom:10px; }
+.empty h3{ font-family:'Fraunces',serif; color:var(--ink); margin:0 0 6px; }
+.empty p{ margin:0; font-size:.88rem; max-width:340px; margin:0 auto; }
+
+/* ---------- Grid of cards ---------- */
+.grid{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(168px,1fr)); gap:16px;
+}
+.card{
+  background:var(--card); border:1px solid var(--line);
+  border-radius:var(--radius); position:relative; cursor:pointer;
+  overflow:hidden;
+  box-shadow:var(--shadow-sm);
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.card:hover{ transform:translateY(-2px); box-shadow:var(--shadow-md); border-color:var(--line-soft); }
+.card .accent-bar{ height:3px; width:100%; }
+.card .thumb{
+  height:96px; display:flex; align-items:center; justify-content:center;
+  background:var(--paper-deep); margin:10px 10px 0; border-radius:calc(var(--radius) - 4px); overflow:hidden;
+}
+.card .thumb img{ width:100%; height:100%; object-fit:cover; }
+.card .thumb .glyph{ font-size:2.1rem; }
+.card .meta{ padding:10px; }
+.card .name{
+  font-family:'Inter',sans-serif; font-weight:600; font-size:.82rem;
+  color:var(--ink); word-break:break-word; margin-bottom:6px; line-height:1.25;
+}
+.card .sub{
+  font-family:'IBM Plex Mono',monospace; font-size:.66rem; color:var(--ink-soft);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.stamp{
+  font-family:'IBM Plex Mono',monospace; font-size:.6rem; font-weight:600;
+  text-transform:uppercase; letter-spacing:.04em;
+  padding:2px 8px; border-radius:20px;
+  display:inline-block;
+}
+.stamp.soprano{ color:var(--soprano-color); background:color-mix(in srgb, var(--soprano-color) 14%, transparent); }
+.stamp.alto{ color:var(--alto-color); background:color-mix(in srgb, var(--alto-color) 14%, transparent); }
+.stamp.tenor{ color:var(--tenor-color); background:color-mix(in srgb, var(--tenor-color) 14%, transparent); }
+.stamp.basse{ color:var(--basse-color); background:color-mix(in srgb, var(--basse-color) 14%, transparent); }
+
+.delbtn{
+  position:absolute; bottom:8px; right:8px;
+  all:unset; cursor:pointer; font-family:'IBM Plex Mono',monospace;
+  font-size:.62rem; color:var(--ink-soft); text-decoration:underline;
+  opacity:0; transition:opacity .12s;
+}
+.card:hover .delbtn, .row:hover .delbtn{ opacity:1; }
+
+/* ---------- List view ---------- */
+table.list{ width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-sm); }
+table.list thead th{
+  text-align:left; font-family:'IBM Plex Mono',monospace; font-size:.66rem; text-transform:uppercase;
+  letter-spacing:.08em; color:var(--ink-soft); padding:10px 12px; border-bottom:1px solid var(--line);
+}
+table.list tbody tr{ border-bottom:1px solid var(--line-soft); cursor:pointer; transition:background-color .1s; }
+table.list tbody tr:hover{ background:var(--paper-deep); }
+table.list td{ padding:10px 12px; font-size:.85rem; vertical-align:middle; }
+table.list td.name{ font-weight:600; display:flex; align-items:center; gap:8px; }
+table.list td.type span{
+  font-family:'IBM Plex Mono',monospace; font-size:.63rem; font-weight:600; text-transform:uppercase; letter-spacing:.04em;
+  padding:2px 8px; border-radius:20px;
+}
+table.list td.type .soprano{ color:var(--soprano-color); background:color-mix(in srgb, var(--soprano-color) 14%, transparent); }
+table.list td.type .alto{ color:var(--alto-color); background:color-mix(in srgb, var(--alto-color) 14%, transparent); }
+table.list td.type .tenor{ color:var(--tenor-color); background:color-mix(in srgb, var(--tenor-color) 14%, transparent); }
+table.list td.type .basse{ color:var(--basse-color); background:color-mix(in srgb, var(--basse-color) 14%, transparent); }
+table.list td.mono{ font-family:'IBM Plex Mono',monospace; font-size:.75rem; color:var(--ink-soft); }
+
+/* ---------- Modals ---------- */
+.overlay{
+  position:fixed; inset:0; background:rgba(10,14,18,.5); backdrop-filter:blur(2px);
+  display:flex; align-items:center; justify-content:center; padding:20px; z-index:50;
+}
+.modal{
+  background:var(--card); border:1px solid var(--line); border-radius:calc(var(--radius) + 4px);
+  max-width:520px; width:100%; padding:24px; box-shadow:var(--shadow-md);
+  max-height:88vh; overflow:auto;
+}
+.modal h3{ font-family:'Fraunces',serif; font-weight:600; margin:0 0 4px; font-size:1.2rem; }
+.modal .eyebrow{
+  font-family:'IBM Plex Mono',monospace; font-size:.65rem; text-transform:uppercase;
+  letter-spacing:.12em; color:var(--ink-soft); margin-bottom:10px;
+}
+.modal .previewbox{
+  background:var(--paper-deep); border:1px solid var(--line-soft); margin:14px 0;
+  min-height:140px; display:flex; align-items:center; justify-content:center; overflow:hidden;
+}
+.modal .previewbox img, .modal .previewbox video{ width:100%; max-height:280px; }
+.modal .previewbox audio{ width:90%; }
+.modal .glyph.big{ font-size:3rem; }
+.modal .field{ margin-bottom:12px; }
+.modal .field label{
+  display:block; font-family:'IBM Plex Mono',monospace; font-size:.65rem; text-transform:uppercase;
+  letter-spacing:.1em; color:var(--ink-soft); margin-bottom:4px;
+}
+.modal .field input[type=text]{
+  width:100%; padding:8px 10px; border:1.5px solid var(--ink); border-radius:var(--radius);
+  font-family:'Inter',sans-serif; font-size:.88rem; background:var(--card); color:var(--ink);
+}
+.modal .field select{
+  width:100%; padding:8px 10px; border:1.5px solid var(--ink); border-radius:var(--radius);
+  font-family:'Inter',sans-serif; font-size:.88rem; background:var(--card); color:var(--ink);
+}
+.modal .infoline{ font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:var(--ink-soft); margin-bottom:14px; }
+.modal .actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
+.modal .actions.between{ justify-content:space-between; }
+
+.modal.fullscreen{
+  max-width:100%; width:100%; height:100%; max-height:100%;
+  border-radius:0; box-shadow:none; display:flex; flex-direction:column;
+}
+.overlay.fullscreen{ padding:0; }
+.modal.fullscreen .previewbox{
+  flex:1; min-height:0; margin:14px 0;
+}
+.modal.fullscreen .previewbox img,
+.modal.fullscreen .previewbox video{ width:auto; max-width:100%; height:100%; object-fit:contain; }
+.modal.fullscreen .previewbox iframe{ width:100%; height:100%; }
+.modal.fullscreen .previewbox pre{ max-height:100%; height:100%; }
+.modal.fullscreen .actions{ flex:0 0 auto; }
+
+/* toast */
+.toast{
+  position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
+  background:var(--ink); color:var(--card); font-family:'IBM Plex Mono',monospace;
+  font-size:.78rem; padding:10px 18px; border-radius:var(--radius); z-index:60;
+  opacity:0; pointer-events:none; transition:opacity .2s, transform .2s;
+  box-shadow:var(--shadow-md);
+}
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(-6px); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <div class="brand">
+      <svg class="staff-mark" width="40" height="32" viewBox="0 0 40 32" aria-hidden="true">
+        <line x1="0" y1="4" x2="40" y2="4"/>
+        <line x1="0" y1="10" x2="40" y2="10"/>
+        <line x1="0" y1="16" x2="40" y2="16"/>
+        <line x1="0" y1="22" x2="40" y2="22"/>
+        <line x1="0" y1="28" x2="40" y2="28"/>
+        <circle cx="12" cy="16" r="3.2"/>
+        <circle cx="27" cy="10" r="3.2"/>
+      </svg>
+      <div>
+        <h1>Archive</h1>
+        <span class="tag">chorale</span>
+      </div>
+    </div>
+    <div class="searchwrap" id="searchwrap" style="display:none;">
+      <label for="search">Rechercher un fichier</label>
+      <input id="search" type="text" placeholder="nom du fichier…">
+    </div>
+    <div class="header-actions">
+      <button class="theme-toggle" id="themeToggle" title="Changer de thème" aria-label="Changer de thème">
+        <svg id="themeIconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/><line x1="18.4" y1="18.4" x2="19.8" y2="19.8"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.2" y1="19.8" x2="5.6" y2="18.4"/><line x1="18.4" y1="5.6" x2="19.8" y2="4.2"/></svg>
+        <svg id="themeIconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none;"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>
+      </button>
+      <button class="btn ghost small" id="driveSettingsBtn" style="white-space:nowrap;">☁︎ Drive <span id="driveStatusPill">non connecté</span></button>
+    </div>
+  </header>
+
+  <div id="reconnectBanner" style="display:none;"></div>
+
+  <div id="foldersScreen">
+    <div class="folders-intro">
+      <h2>Vos chants</h2>
+      <p>Chaque chant a son propre classement par pupitre — Soprano / Alto / Ténor / Basse — indépendant des autres.</p>
+    </div>
+    <div class="folder-grid" id="folderGrid"></div>
+  </div>
+
+  <div id="folderScreen" style="display:none;">
+    <div class="breadcrumb">
+      <button class="back" id="backToFolders">← Tous les chants</button>
+      <span class="sep">/</span>
+      <h2 id="folderTitle">Chant</h2>
+    </div>
+
+    <div class="layout">
+      <nav class="drawer" id="drawer" aria-label="Catégories"></nav>
+
+      <main>
+        <div class="dropzone" id="dropzone">
+          <div class="slot">Glissez vos fichiers ici</div>
+          <p>ou choisissez-les depuis votre appareil</p>
+          <button class="btn" id="pickBtn">Ajouter des fichiers</button>
+          <input type="file" id="fileInput" multiple>
+        </div>
+
+        <div class="toolbar">
+          <h2 id="sectionTitle">Tous les fichiers</h2>
+          <div class="viewtoggle" role="group" aria-label="Mode d'affichage">
+            <button id="gridBtn" aria-pressed="true">Grille</button>
+            <button id="listBtn" aria-pressed="false">Liste</button>
+          </div>
+        </div>
+
+        <div id="content"></div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<div id="modalLayer"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const CATS = {
+    soprano: { label:"Soprano", glyph:"🎤" },
+    alto:    { label:"Alto",    glyph:"🎤" },
+    tenor:   { label:"Ténor",   glyph:"🎤" },
+    basse:   { label:"Basse",   glyph:"🎤" }
+  };
+  const DEFAULT_CAT = "soprano";
+  function normalizeCategory(cat){
+    return (cat && CATS[cat]) ? cat : DEFAULT_CAT;
+  }
+
+  let folders = [];    // {id, name, createdAt} — chaque dossier est un « chant »
+  let currentFolderId = null; // null = écran des chants
+  let files = [];      // {id, folderId, file, name, category, url, thumb, addedAt}
+  let idSeq = 1;
+  let folderIdSeq = 1;
+  let activeCat = "all";
+  let viewMode = "grid";
+  let searchTerm = "";
+  let pendingFile = null; // file awaiting preview/confirm
+
+  const drawerEl = document.getElementById('drawer');
+  const contentEl = document.getElementById('content');
+  const sectionTitle = document.getElementById('sectionTitle');
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const modalLayer = document.getElementById('modalLayer');
+  const toastEl = document.getElementById('toast');
+  const foldersScreen = document.getElementById('foldersScreen');
+  const folderScreen = document.getElementById('folderScreen');
+  const folderGrid = document.getElementById('folderGrid');
+  const folderTitle = document.getElementById('folderTitle');
+  const searchwrap = document.getElementById('searchwrap');
+
+  function extOf(name){
+    const m = /\.([a-z0-9]+)$/i.exec(name);
+    return m ? m[1].toLowerCase() : "";
+  }
+
+  // Le type de fichier ne détermine plus le pupitre (choisi manuellement) — il sert
+  // uniquement à choisir une icône cohérente dans les vignettes et à orienter l'aperçu.
+  function fileTypeInfo(file){
+    const type = (file && file.type) || "";
+    const ext = extOf((file && file.name) || "");
+    if(type.startsWith("video/") || ["mp4","mov","avi","mkv","webm","m4v"].includes(ext)) return { kind:"video", glyph:"🎬" };
+    if(type.startsWith("audio/") || ["mp3","wav","ogg","flac","m4a","aac"].includes(ext)) return { kind:"audio", glyph:"🎵" };
+    if(type.startsWith("image/") || ["jpg","jpeg","png","gif","webp","svg","bmp","heic","tiff"].includes(ext)) return { kind:"image", glyph:"🖼️" };
+    if(type === "application/pdf" || ext === "pdf") return { kind:"pdf", glyph:"📄" };
+    if(type.startsWith("text/") || ["txt","md","csv"].includes(ext)) return { kind:"text", glyph:"📄" };
+    return { kind:"autre", glyph:"🗂️" };
+  }
+
+  function formatSize(bytes){
+    if(bytes < 1024) return bytes + " o";
+    if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + " Ko";
+    if(bytes < 1024*1024*1024) return (bytes/(1024*1024)).toFixed(1) + " Mo";
+    return (bytes/(1024*1024*1024)).toFixed(2) + " Go";
+  }
+
+  function formatDate(d){
+    return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' }) + " · " +
+           d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> toastEl.classList.remove('show'), 2200);
+  }
+
+  // ---------- Sauvegarde locale (IndexedDB) ----------
+  // Stocke le fichier (blob) et ses métadonnées directement dans le navigateur,
+  // pour que le classeur soit encore rempli la prochaine fois que ce fichier HTML est ouvert.
+  const DB_NAME = "archiveFichiersDB";
+  const STORE_NAME = "files";
+  const FOLDERS_STORE = "folders";
+  const SETTINGS_STORE = "settings";
+  const DB_VERSION = 3;
+  let dbInstance = null;
+
+  function openDB(){
+    return new Promise((resolve, reject)=>{
+      if(dbInstance){ resolve(dbInstance); return; }
+      if(!window.indexedDB){ reject(new Error("indexedDB indisponible")); return; }
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = (e)=>{
+        const db = e.target.result;
+        if(!db.objectStoreNames.contains(STORE_NAME)){
+          db.createObjectStore(STORE_NAME, { keyPath:"id", autoIncrement:true });
+        }
+        if(!db.objectStoreNames.contains(FOLDERS_STORE)){
+          db.createObjectStore(FOLDERS_STORE, { keyPath:"id", autoIncrement:true });
+        }
+        if(!db.objectStoreNames.contains(SETTINGS_STORE)){
+          db.createObjectStore(SETTINGS_STORE, { keyPath:"key" });
+        }
+      };
+      req.onsuccess = (e)=>{ dbInstance = e.target.result; resolve(dbInstance); };
+      req.onerror = ()=> reject(req.error);
+    });
+  }
+
+  async function dbAdd(record, storeName){
+    const db = await openDB();
+    return new Promise((resolve, reject)=>{
+      const tx = db.transaction(storeName || STORE_NAME, "readwrite");
+      const store = tx.objectStore(storeName || STORE_NAME);
+      const req = store.add(record);
+      req.onsuccess = ()=> resolve(req.result);
+      req.onerror = ()=> reject(req.error);
+    });
+  }
+
+  async function dbPut(record, storeName){
+    const db = await openDB();
+    return new Promise((resolve, reject)=>{
+      const tx = db.transaction(storeName || STORE_NAME, "readwrite");
+      const req = tx.objectStore(storeName || STORE_NAME).put(record);
+      req.onsuccess = ()=> resolve(req.result);
+      req.onerror = ()=> reject(req.error);
+    });
+  }
+
+  async function dbGetOne(key, storeName){
+    const db = await openDB();
+    return new Promise((resolve, reject)=>{
+      const tx = db.transaction(storeName || STORE_NAME, "readonly");
+      const req = tx.objectStore(storeName || STORE_NAME).get(key);
+      req.onsuccess = ()=> resolve(req.result || null);
+      req.onerror = ()=> reject(req.error);
+    });
+  }
+
+  async function dbDelete(id, storeName){
+    const db = await openDB();
+    return new Promise((resolve, reject)=>{
+      const tx = db.transaction(storeName || STORE_NAME, "readwrite");
+      tx.objectStore(storeName || STORE_NAME).delete(id);
+      tx.oncomplete = ()=> resolve();
+      tx.onerror = ()=> reject(tx.error);
+    });
+  }
+
+  async function dbGetAll(storeName){
+    const db = await openDB();
+    return new Promise((resolve, reject)=>{
+      const tx = db.transaction(storeName || STORE_NAME, "readonly");
+      const req = tx.objectStore(storeName || STORE_NAME).getAll();
+      req.onsuccess = ()=> resolve(req.result || []);
+      req.onerror = ()=> reject(req.error);
+    });
+  }
+
+  async function getSetting(key){
+    try{
+      const rec = await dbGetOne(key, SETTINGS_STORE);
+      return rec ? rec.value : null;
+    }catch(e){ return null; }
+  }
+  async function setSetting(key, value){
+    try{ await dbPut({ key, value }, SETTINGS_STORE); }catch(e){ /* pas grave */ }
+  }
+
+  async function dbUpdateFileStatus(id, patch){
+    try{
+      const rec = await dbGetOne(id, STORE_NAME);
+      if(!rec) return;
+      Object.assign(rec, patch);
+      rec.id = id;
+      await dbPut(rec, STORE_NAME);
+    }catch(e){ /* le statut reste au moins à jour en mémoire */ }
+  }
+
+  async function dbUpdateFolder(id, patch){
+    try{
+      const rec = await dbGetOne(id, FOLDERS_STORE);
+      if(!rec) return;
+      Object.assign(rec, patch);
+      rec.id = id;
+      await dbPut(rec, FOLDERS_STORE);
+    }catch(e){ /* pas grave, reste en mémoire pour cette session */ }
+  }
+
+  let localSaveAvailable = true;
+  let appRole = null; // 'admin' | 'reader'
+  let readerApiKey = null;
+  let readerRootFolderId = null;
+
+  // ---------- Google Drive ----------
+  let driveClientId = null;
+  let accessToken = null;
+  let tokenExpiresAt = 0;
+  let gisTokenClient = null;
+  let driveConnected = false;
+  let driveArchiveRootId = null;
+  let connectedAccountEmail = null;
+
+  const driveStatusPill = document.getElementById('driveStatusPill');
+
+  function updateDriveStatusUI(){
+    if(appRole === 'reader'){
+      driveStatusPill.textContent = readerRootFolderId ? "lecture" : "non configuré";
+      driveStatusPill.className = readerRootFolderId ? "connected" : "";
+      updateReconnectBanner();
+      return;
+    }
+    if(!driveClientId){
+      driveStatusPill.textContent = "non configuré";
+      driveStatusPill.className = "";
+    } else if(driveConnected){
+      driveStatusPill.textContent = "connecté";
+      driveStatusPill.className = "connected";
+    } else {
+      driveStatusPill.textContent = "non connecté";
+      driveStatusPill.className = "";
+    }
+    updateReconnectBanner();
+  }
+
+  function updateReconnectBanner(){
+    const banner = document.getElementById('reconnectBanner');
+    if(appRole === 'admin' && driveClientId && !driveConnected){
+      banner.style.display = "flex";
+      banner.innerHTML = `<span>Connexion Google Drive interrompue — les nouveaux fichiers restent en attente d'envoi.</span><button id="reconnectNowBtn">Se reconnecter</button>`;
+      document.getElementById('reconnectNowBtn').addEventListener('click', manualReconnect);
+    } else {
+      banner.style.display = "none";
+      banner.innerHTML = "";
+    }
+  }
+
+  async function manualReconnect(){
+    try{
+      await ensureToken();
+      retrySyncQueue();
+      showToast("Reconnecté à Google Drive.");
+    }catch(e){
+      connectDrive();
+    }
+  }
+
+  function loadGisScript(){
+    return new Promise((resolve, reject)=>{
+      if(window.google && window.google.accounts){ resolve(); return; }
+      let tries = 0;
+      const check = setInterval(()=>{
+        tries++;
+        if(window.google && window.google.accounts){ clearInterval(check); resolve(); }
+        else if(tries > 40){ clearInterval(check); reject(new Error("Google Identity Services indisponible")); }
+      }, 150);
+    });
+  }
+
+  async function fetchAccountEmail(token){
+    try{
+      const resp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers:{ Authorization:`Bearer ${token}` }});
+      if(!resp.ok) return null;
+      const data = await resp.json();
+      return data.email || null;
+    }catch(e){ return null; }
+  }
+
+  // Si le compte connecté a changé depuis la dernière fois, les dossiers Drive mis en
+  // cache appartiennent à l'ancien compte et deviennent inaccessibles : on repart à zéro
+  // proprement plutôt que de laisser les envois échouer silencieusement.
+  async function reconcileAccount(newEmail){
+    const storedEmail = await getSetting('driveAccountEmail');
+    connectedAccountEmail = newEmail || storedEmail || null;
+    if(storedEmail && newEmail && storedEmail !== newEmail){
+      driveArchiveRootId = null;
+      await setSetting('driveArchiveRootId', null);
+      for(const fold of folders){
+        fold.driveFolderId = null;
+        fold.driveSubfolders = null;
+        await dbUpdateFolder(fold.id, { driveFolderId: null, driveSubfolders: null });
+      }
+      for(const f of files){
+        f.driveStatus = 'pending';
+        f.driveFileId = null;
+        await dbUpdateFileStatus(f.id, { driveStatus:'pending', driveFileId:null });
+      }
+      await setSetting('driveAccountEmail', newEmail);
+      showToast("Compte Google différent détecté — un nouveau classeur Drive sera recréé sous ce compte.");
+      if(currentFolderId !== null) renderAll(); else renderFoldersScreen();
+    } else if(newEmail && newEmail !== storedEmail){
+      await setSetting('driveAccountEmail', newEmail);
+    }
+  }
+
+  async function driveDownloadBlob(fileId){
+    const resp = await driveApiFetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`);
+    return await resp.blob();
+  }
+
+  // Récupère le contenu déjà présent sur le Drive (créé depuis un autre appareil) et le
+  // rapatrie dans le stockage local de cet appareil-ci, pour que l'administrateur retrouve
+  // le même classeur partout, pas seulement là où les fichiers ont été ajoutés en premier.
+  let pullInProgress = false;
+  async function pullFromDriveForAdmin(silent){
+    if(pullInProgress) return;
+    pullInProgress = true;
+    if(!silent) showToast("Récupération du contenu depuis Drive…");
+    try{
+      if(!driveArchiveRootId){
+        const found = await driveFindFolder('Archive (classeur personnel)', null);
+        if(!found){ pullInProgress = false; if(!silent) showToast("Rien à récupérer pour l'instant."); return; }
+        driveArchiveRootId = found;
+        await setSetting('driveArchiveRootId', driveArchiveRootId);
+      }
+
+      const songDirsResp = await driveApiFetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${driveArchiveRootId}' in parents and trashed=false and mimeType='application/vnd.google-apps.folder'`)}&fields=files(id,name)`);
+      const songDirs = (await songDirsResp.json()).files || [];
+
+      let addedFiles = 0;
+      for(const sd of songDirs){
+        let localFolder = folders.find(f => f.driveFolderId === sd.id || f.name === sd.name);
+        if(!localFolder){
+          localFolder = { id: folderIdSeq++, name: sd.name, createdAt: new Date(), driveFolderId: sd.id, driveSubfolders: null };
+          folders.push(localFolder);
+          try{
+            const dbId = await dbAdd({ name: localFolder.name, createdAt: localFolder.createdAt.toISOString(), driveFolderId: sd.id }, FOLDERS_STORE);
+            localFolder.id = dbId;
+          }catch(e){}
+        } else if(!localFolder.driveFolderId){
+          localFolder.driveFolderId = sd.id;
+          await dbUpdateFolder(localFolder.id, { driveFolderId: sd.id });
+        }
+
+        const catDirsResp = await driveApiFetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${sd.id}' in parents and trashed=false and mimeType='application/vnd.google-apps.folder'`)}&fields=files(id,name)`);
+        const catDirs = (await catDirsResp.json()).files || [];
+        const subMap = localFolder.driveSubfolders || {};
+
+        for(const cd of catDirs){
+          const catKey = Object.keys(CATS).find(k => CATS[k].label === cd.name);
+          if(!catKey) continue;
+          subMap[catKey] = cd.id;
+
+          const filesResp = await driveApiFetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${cd.id}' in parents and trashed=false`)}&fields=files(id,name,size,modifiedTime,mimeType)`);
+          const driveFiles = (await filesResp.json()).files.filter(x => x.mimeType !== 'application/vnd.google-apps.folder') || [];
+
+          for(const df of driveFiles){
+            if(files.some(f => f.driveFileId === df.id)) continue; // déjà présent ici
+            try{
+              const blob = await driveDownloadBlob(df.id);
+              const url = URL.createObjectURL(blob);
+              const entry = {
+                id: idSeq++,
+                folderId: localFolder.id,
+                file: blob,
+                name: df.name,
+                category: catKey,
+                size: Number(df.size) || blob.size,
+                url,
+                thumb: null,
+                addedAt: df.modifiedTime ? new Date(df.modifiedTime) : new Date(),
+                driveStatus: 'synced',
+                driveFileId: df.id
+              };
+              files.push(entry);
+              addedFiles++;
+              try{
+                const dbId = await dbAdd({ folderId: localFolder.id, name: entry.name, category: catKey, size: entry.size, addedAt: entry.addedAt.toISOString(), blob, driveStatus:'synced', driveFileId: df.id });
+                entry.id = dbId;
+              }catch(e){}
+              if(catKey && fileTypeInfo(blob).kind === 'video'){
+                makeVideoThumb(url, (dataUrl)=>{ if(dataUrl){ entry.thumb = dataUrl; if(viewMode==='grid') renderAll(); } });
+              }
+            }catch(e){ /* ce fichier sera retenté à la prochaine récupération */ }
+          }
+        }
+        localFolder.driveSubfolders = subMap;
+        await dbUpdateFolder(localFolder.id, { driveSubfolders: subMap });
+      }
+
+      if(currentFolderId !== null) renderAll(); else renderFoldersScreen();
+      if(!silent) showToast(addedFiles > 0 ? (addedFiles + " fichier(s) récupéré(s) depuis Drive.") : "Vous étiez déjà à jour.");
+    }catch(e){
+      if(!silent) showToast("Échec de la récupération depuis Drive.");
+    }
+    pullInProgress = false;
+  }
+
+  async function handleTokenAcquired(resp){
+    accessToken = resp.access_token;
+    tokenExpiresAt = Date.now() + ((resp.expires_in || 3600) * 1000);
+    driveConnected = true;
+    updateDriveStatusUI();
+    const email = await fetchAccountEmail(accessToken);
+    await reconcileAccount(email);
+    updateDriveStatusUI();
+    if(appRole === 'admin'){
+      await pullFromDriveForAdmin(true); // toujours vérifier, pas seulement si totalement vide
+    }
+  }
+
+  async function initGis(clientId){
+    try{
+      await loadGisScript();
+    }catch(e){
+      showToast("Impossible de charger Google (vérifiez votre connexion).");
+      return;
+    }
+    gisTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email',
+      callback: async (resp)=>{
+        if(resp.error){
+          driveConnected = false;
+          updateDriveStatusUI();
+          return;
+        }
+        await handleTokenAcquired(resp);
+        showToast("Connecté à Google Drive.");
+        retrySyncQueue();
+      }
+    });
+  }
+
+  function connectDrive(){
+    if(!gisTokenClient){ showToast("Enregistrez d'abord un Client ID valide."); return; }
+    gisTokenClient.requestAccessToken({ prompt: 'consent' });
+  }
+
+  function disconnectDrive(){
+    if(accessToken && window.google){
+      try{ google.accounts.oauth2.revoke(accessToken, ()=>{}); }catch(e){}
+    }
+    fetch('/.netlify/functions/drive-disconnect', { credentials:'include' }).catch(()=>{});
+    accessToken = null;
+    tokenExpiresAt = 0;
+    driveConnected = false;
+    connectedAccountEmail = null;
+    updateDriveStatusUI();
+    showToast("Déconnecté de Google Drive.");
+  }
+
+  // Connexion permanente (nécessite les fonctions serveur — voir guide de déploiement).
+  // Si elles ne sont pas déployées, cet appel échoue simplement et on repasse par GIS.
+  async function tryBackendToken(){
+    try{
+      const resp = await fetch('/.netlify/functions/drive-access-token', { credentials:'include' });
+      if(!resp.ok) return null;
+      const data = await resp.json();
+      if(!data.access_token) return null;
+      return data;
+    }catch(e){ return null; }
+  }
+
+  function startPermanentConnect(){
+    window.location.href = '/.netlify/functions/drive-auth-start';
+  }
+
+  function ensureToken(){
+    return new Promise(async (resolve, reject)=>{
+      if(accessToken && Date.now() < tokenExpiresAt - 60000){ resolve(accessToken); return; }
+
+      const backend = await tryBackendToken();
+      if(backend){
+        accessToken = backend.access_token;
+        tokenExpiresAt = Date.now() + ((backend.expires_in || 3600) * 1000);
+        driveConnected = true;
+        updateDriveStatusUI();
+        const email = await fetchAccountEmail(accessToken);
+        await reconcileAccount(email);
+        updateDriveStatusUI();
+        if(appRole === 'admin') pullFromDriveForAdmin(true);
+        resolve(accessToken);
+        return;
+      }
+
+      if(!gisTokenClient){ reject(new Error("Drive non configuré")); return; }
+      gisTokenClient.callback = async (resp)=>{
+        if(resp.error){ driveConnected = false; updateDriveStatusUI(); reject(new Error(resp.error)); return; }
+        await handleTokenAcquired(resp);
+        resolve(accessToken);
+      };
+      gisTokenClient.requestAccessToken({ prompt: '' });
+    });
+  }
+
+  async function driveApiFetch(url, options){
+    const token = await ensureToken();
+    const resp = await fetch(url, {
+      ...options,
+      headers: { ...(options && options.headers), Authorization: `Bearer ${token}` }
+    });
+    if(!resp.ok){
+      const errText = await resp.text().catch(()=> "");
+      throw new Error("Drive API error " + resp.status + " " + errText.slice(0,200));
+    }
+    return resp;
+  }
+
+  async function driveFindFolder(name, parentId){
+    const safe = name.replace(/'/g, "\\'");
+    const parentClause = parentId ? `'${parentId}' in parents` : `'root' in parents`;
+    const q = encodeURIComponent(`name='${safe}' and mimeType='application/vnd.google-apps.folder' and trashed=false and ${parentClause}`);
+    const resp = await driveApiFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`);
+    const data = await resp.json();
+    return (data.files && data.files[0]) ? data.files[0].id : null;
+  }
+
+  async function driveCreateFolder(name, parentId){
+    const metadata = { name, mimeType:'application/vnd.google-apps.folder' };
+    if(parentId) metadata.parents = [parentId];
+    const resp = await driveApiFetch('https://www.googleapis.com/drive/v3/files', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(metadata)
+    });
+    const data = await resp.json();
+    return data.id;
+  }
+
+  async function driveFindOrCreateFolder(name, parentId){
+    let id = await driveFindFolder(name, parentId);
+    if(!id) id = await driveCreateFolder(name, parentId);
+    return id;
+  }
+
+  async function driveUploadFile(blob, name, parentId){
+    const metadata = { name, parents:[parentId] };
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(metadata)], { type:'application/json' }));
+    form.append('file', blob);
+    const resp = await driveApiFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+      method:'POST',
+      body: form
+    });
+    const data = await resp.json();
+    return data.id;
+  }
+
+  async function getDriveCategoryFolderId(localFolder, category){
+    if(!driveArchiveRootId){
+      driveArchiveRootId = await driveFindOrCreateFolder('Archive (classeur personnel)', null);
+      await setSetting('driveArchiveRootId', driveArchiveRootId);
+    }
+    if(!localFolder.driveFolderId){
+      localFolder.driveFolderId = await driveFindOrCreateFolder(localFolder.name, driveArchiveRootId);
+      await dbUpdateFolder(localFolder.id, { driveFolderId: localFolder.driveFolderId });
+    }
+    if(!localFolder.driveSubfolders) localFolder.driveSubfolders = {};
+    if(!localFolder.driveSubfolders[category]){
+      localFolder.driveSubfolders[category] = await driveFindOrCreateFolder(CATS[category].label, localFolder.driveFolderId);
+      await dbUpdateFolder(localFolder.id, { driveSubfolders: localFolder.driveSubfolders });
+    }
+    return localFolder.driveSubfolders[category];
+  }
+
+  async function syncFileToDrive(entry){
+    if(!driveClientId) return;
+    entry.driveStatus = 'syncing';
+    if(currentFolderId === entry.folderId) renderAll();
+    try{
+      const fold = folders.find(f => f.id === entry.folderId);
+      if(!fold) throw new Error("dossier introuvable");
+      const parentId = await getDriveCategoryFolderId(fold, entry.category);
+      const fileId = await driveUploadFile(entry.file, entry.name, parentId);
+      entry.driveStatus = 'synced';
+      entry.driveFileId = fileId;
+      await dbUpdateFileStatus(entry.id, { driveStatus:'synced', driveFileId:fileId });
+    }catch(e){
+      entry.driveStatus = driveConnected ? 'error' : 'pending';
+      await dbUpdateFileStatus(entry.id, { driveStatus: entry.driveStatus });
+    }
+    if(currentFolderId === entry.folderId) renderAll();
+  }
+
+  function retrySyncQueue(){
+    if(!driveClientId || !driveConnected) return;
+    files.filter(f => f.driveStatus === 'pending' || f.driveStatus === 'error').forEach(f => syncFileToDrive(f));
+  }
+
+  function driveBadge(entry){
+    if(!driveClientId) return "";
+    const status = entry.driveStatus || 'pending';
+    const map = {
+      pending: { icon:"⏳", title:"En attente de connexion Drive — cliquez pour réessayer", clickable:true },
+      syncing: { icon:"↻", title:"Envoi vers Drive en cours…", clickable:false },
+      synced:  { icon:"☁︎", title:"Sauvegardé sur Google Drive", clickable:false },
+      error:   { icon:"⚠", title:"Échec de l'envoi — cliquez pour réessayer", clickable:true }
+    };
+    const info = map[status] || map.pending;
+    return { ...info, status };
+  }
+
+  // ---------- Mode Lecteur : lecture publique du Drive (sans connexion) ----------
+  async function driveKeyFetchChildren(folderId){
+    const q = encodeURIComponent(`'${folderId}' in parents and trashed=false`);
+    const fields = encodeURIComponent('files(id,name,mimeType,size,modifiedTime)');
+    const resp = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fields}&key=${readerApiKey}&pageSize=1000`);
+    if(!resp.ok){
+      let detail = "";
+      try{
+        const errData = await resp.json();
+        detail = (errData.error && errData.error.message) ? errData.error.message : JSON.stringify(errData);
+      }catch(e){ detail = await resp.text().catch(()=> ""); }
+      const err = new Error(detail || ("Erreur " + resp.status));
+      err.status = resp.status;
+      throw err;
+    }
+    const data = await resp.json();
+    return data.files || [];
+  }
+
+  function extractDriveFolderId(input){
+    const s = input.trim();
+    const m = s.match(/\/folders\/([a-zA-Z0-9_-]+)/) || s.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    return m ? m[1] : s;
+  }
+
+  function showDriveErrorModal(message){
+    const modal = buildModal(`
+      <div class="eyebrow">Connexion impossible</div>
+      <h3>Google a refusé la lecture</h3>
+      <div class="infoline" style="color:var(--stamp-red);">${escapeHtml(message)}</div>
+      <div class="infoline">ID de dossier utilisé par l'app : <strong>${readerRootFolderId ? escapeHtml(readerRootFolderId) : "(vide — c'est probablement le problème)"}</strong></div>
+      <div class="infoline">Vérifiez ces points chez l'administrateur :</div>
+      <ul style="font-family:'IBM Plex Mono',monospace; font-size:.75rem; color:var(--ink-soft); line-height:1.7; padding-left:18px; margin:0 0 14px;">
+        <li>Le dossier est bien partagé « Anyone with the link → Lecteur » sur Drive</li>
+        <li>La clé API a « Google Drive API » activée sur le même projet Google Cloud</li>
+        <li>Si la clé a une restriction de site (référent HTTP), elle inclut bien cette adresse</li>
+        <li>L'ID collé est bien l'identifiant du dossier seul, pas l'adresse complète</li>
+      </ul>
+      <div class="actions">
+        <button class="btn" id="driveErrClose">Fermer</button>
+      </div>
+    `);
+    modal.querySelector('#driveErrClose').addEventListener('click', closeModal);
+  }
+
+  async function loadReaderData(silent){
+    if(!readerApiKey || !readerRootFolderId){ renderFoldersScreen(); return; }
+    if(!silent) showToast("Chargement depuis Google Drive…");
+    const wasInFolder = currentFolderId !== null;
+    const currentFolderName = wasInFolder ? (folderTitle.textContent || "") : null;
+    try{
+      folders = [];
+      files = [];
+      const rootChildren = await driveKeyFetchChildren(readerRootFolderId);
+      const folderDirs = rootChildren.filter(f => f.mimeType === 'application/vnd.google-apps.folder');
+      let fSeq = 1, iSeq = 1;
+      for(const fd of folderDirs){
+        const localFolder = { id: fSeq++, name: fd.name, createdAt: new Date(fd.modifiedTime || Date.now()), driveFolderId: fd.id };
+        folders.push(localFolder);
+        const catDirs = await driveKeyFetchChildren(fd.id);
+        for(const cd of catDirs.filter(c => c.mimeType === 'application/vnd.google-apps.folder')){
+          const catKey = Object.keys(CATS).find(k => CATS[k].label === cd.name) || DEFAULT_CAT;
+          const inCat = await driveKeyFetchChildren(cd.id);
+          inCat.filter(x => x.mimeType !== 'application/vnd.google-apps.folder').forEach(x=>{
+            files.push({
+              id: iSeq++,
+              folderId: localFolder.id,
+              file: null,
+              name: x.name,
+              category: catKey,
+              size: Number(x.size) || 0,
+              url: null,
+              driveFileId: x.id,
+              thumb: null,
+              addedAt: new Date(x.modifiedTime || Date.now())
+            });
+          });
+        }
+      }
+
+      if(wasInFolder){
+        const stillThere = folders.find(f => f.name === currentFolderName);
+        if(stillThere){
+          currentFolderId = stillThere.id;
+          renderAll();
+        } else {
+          currentFolderId = null;
+          foldersScreen.style.display = "block";
+          folderScreen.style.display = "none";
+          searchwrap.style.display = "none";
+          renderFoldersScreen();
+        }
+      } else {
+        renderFoldersScreen();
+      }
+      if(!silent) showToast("Classeur chargé depuis Drive.");
+    }catch(e){
+      if(!silent){
+        renderFoldersScreen();
+        showDriveErrorModal(e.message || "Erreur inconnue");
+      }
+      // en arrière-plan, on retente simplement au prochain cycle sans déranger la personne
+    }
+  }
+
+  let readerPollTimer = null;
+  function startReaderPolling(){
+    if(readerPollTimer) clearInterval(readerPollTimer);
+    readerPollTimer = setInterval(()=>{
+      if(appRole === 'reader' && readerApiKey && readerRootFolderId && !document.hidden){
+        loadReaderData(true);
+      }
+    }, 20000);
+  }
+  function stopReaderPolling(){
+    if(readerPollTimer){ clearInterval(readerPollTimer); readerPollTimer = null; }
+  }
+
+  // ---------- Video thumbnail capture ----------
+  function makeVideoThumb(url, cb){
+    try{
+      const v = document.createElement('video');
+      v.src = url; v.muted = true; v.playsInline = true; v.preload = "metadata";
+      v.addEventListener('loadeddata', ()=>{
+        try{
+          v.currentTime = Math.min(1, (v.duration||1) * 0.1);
+        }catch(e){ cb(null); }
+      });
+      v.addEventListener('seeked', ()=>{
+        try{
+          const canvas = document.createElement('canvas');
+          canvas.width = 160; canvas.height = 96;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+          cb(canvas.toDataURL('image/jpeg', 0.7));
+        }catch(e){ cb(null); }
+      });
+      v.addEventListener('error', ()=> cb(null));
+    }catch(e){ cb(null); }
+  }
+
+  // ---------- Rendering ----------
+  function filesInFolder(){
+    return files.filter(f => f.folderId === currentFolderId);
+  }
+
+  function renderDrawer(){
+    const scoped = filesInFolder();
+    const counts = { all: scoped.length };
+    Object.keys(CATS).forEach(k => counts[k] = 0);
+    scoped.forEach(f => counts[normalizeCategory(f.category)]++);
+    const tabs = [["all","Tous"], ...Object.entries(CATS).map(([k,v])=>[k, v.label])];
+    drawerEl.innerHTML = "";
+    tabs.forEach(([key,label])=>{
+      const btn = document.createElement('button');
+      btn.type = "button";
+      btn.setAttribute('aria-pressed', key===activeCat ? "true":"false");
+      btn.innerHTML = `<span>${label}</span><span class="n">${counts[key]}</span>`;
+      btn.addEventListener('click', ()=>{ activeCat = key; renderAll(); });
+      drawerEl.appendChild(btn);
+    });
+    const note = document.createElement('div');
+    note.className = "drawer-note";
+    note.textContent = localSaveAvailable
+      ? "Vos fichiers sont sauvegardés dans ce navigateur. Rouvrez ce fichier HTML plus tard, ici, et le classeur sera toujours rempli. Rien n'est envoyé sur un serveur."
+      : "Sauvegarde locale indisponible dans cet aperçu. Les fichiers restent en mémoire pour cette session. Téléchargez le fichier HTML et ouvrez-le directement dans votre navigateur pour activer la sauvegarde.";
+    drawerEl.appendChild(note);
+  }
+
+  function currentList(){
+    let list = filesInFolder();
+    if(activeCat !== "all") list = list.filter(f => normalizeCategory(f.category) === activeCat);
+    if(searchTerm.trim()) list = list.filter(f => f.name.toLowerCase().includes(searchTerm.trim().toLowerCase()));
+    return list.slice().sort((a,b)=> b.addedAt - a.addedAt);
+  }
+
+  function renderAll(){
+    if(currentFolderId === null) return; // rien à afficher hors d'un chant
+    renderDrawer();
+    const titleMap = { all:"Tous les fichiers" };
+    Object.entries(CATS).forEach(([k,v]) => { titleMap[k] = v.label; });
+    sectionTitle.textContent = titleMap[activeCat];
+    const list = currentList();
+
+    if(list.length === 0){
+      contentEl.innerHTML = "";
+      const empty = document.createElement('div');
+      empty.className = "empty";
+      if(filesInFolder().length === 0){
+        empty.innerHTML = `<div class="glyph">🎼</div><h3>Ce chant est vide</h3><p>Ajoutez un premier fichier ci-dessus pour commencer à le ranger par pupitre.</p>`;
+      } else {
+        empty.innerHTML = `<div class="glyph">🔎</div><h3>Aucun résultat</h3><p>Aucun fichier ne correspond à ce pupitre ou à cette recherche.</p>`;
+      }
+      contentEl.appendChild(empty);
+      return;
+    }
+
+    if(viewMode === "grid") renderGrid(list); else renderListView(list);
+  }
+
+  function stampMarkup(cat){
+    const key = normalizeCategory(cat);
+    return `<div class="stamp ${key}">${CATS[key].label.slice(0,6)}</div>`;
+  }
+
+  function renderGrid(list){
+    contentEl.innerHTML = "";
+    const grid = document.createElement('div');
+    grid.className = "grid";
+    list.forEach(f=>{
+      const card = document.createElement('div');
+      card.className = "card";
+      card.tabIndex = 0;
+      const badge = appRole === 'admin' ? driveBadge(f) : "";
+      const catKey = normalizeCategory(f.category);
+      card.innerHTML = `
+        <div class="accent-bar" style="background:var(--${catKey}-color);"></div>
+        <div class="thumb">${ f.thumb ? `<img src="${f.thumb}" alt="">` : `<span class="glyph">${fileTypeInfo(f.file || {name:f.name}).glyph}</span>` }</div>
+        ${badge ? `<div class="sync-badge${badge.clickable?' clickable':''}" data-syncid="${f.id}" data-status="${badge.status}" title="${badge.title}">${badge.icon}</div>` : ""}
+        <div class="meta">
+          ${stampMarkup(f.category)}
+          <div class="name" style="margin-top:6px;">${escapeHtml(f.name)}</div>
+          <div class="sub"><span>${formatSize(f.size)}</span><span>${f.addedAt.toLocaleDateString('fr-FR')}</span></div>
+        </div>
+        ${appRole === 'admin' ? `<button class="delbtn" data-id="${f.id}">retirer</button>` : ""}
+      `;
+      card.addEventListener('click', (e)=>{
+        if(e.target.classList.contains('delbtn') || e.target.closest('.sync-badge')) return;
+        openViewer(f);
+      });
+      card.addEventListener('keypress', (e)=>{ if(e.key==='Enter') openViewer(f); });
+      grid.appendChild(card);
+    });
+    contentEl.appendChild(grid);
+    contentEl.querySelectorAll('.delbtn').forEach(b=>{
+      b.addEventListener('click', (e)=>{ e.stopPropagation(); confirmDelete(Number(b.dataset.id)); });
+    });
+    contentEl.querySelectorAll('.sync-badge.clickable').forEach(b=>{
+      b.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const entry = files.find(x=>x.id===Number(b.dataset.syncid));
+        if(entry) syncFileToDrive(entry);
+      });
+    });
+  }
+
+  function renderListView(list){
+    contentEl.innerHTML = "";
+    const table = document.createElement('table');
+    table.className = "list";
+    table.innerHTML = `
+      <thead><tr><th>Nom</th><th>Type</th><th>Taille</th><th>Ajouté le</th><th></th></tr></thead>
+      <tbody></tbody>
+    `;
+    const tbody = table.querySelector('tbody');
+    list.forEach(f=>{
+      const tr = document.createElement('tr');
+      tr.className = "row";
+      const badge = appRole === 'admin' ? driveBadge(f) : "";
+      const badgeHtml = badge ? `<span class="list-sync${badge.clickable?' clickable':''}" data-syncid="${f.id}" data-status="${badge.status}" title="${badge.title}" style="${badge.clickable?'cursor:pointer;':''}">${badge.icon}</span>` : "";
+      tr.innerHTML = `
+        <td class="name">${badgeHtml}${fileTypeInfo(f.file || {name:f.name}).glyph} ${escapeHtml(f.name)}</td>
+        <td class="type"><span class="${normalizeCategory(f.category)}">${CATS[normalizeCategory(f.category)].label}</span></td>
+        <td class="mono">${formatSize(f.size)}</td>
+        <td class="mono">${formatDate(f.addedAt)}</td>
+        <td>${appRole === 'admin' ? `<button class="delbtn" data-id="${f.id}">retirer</button>` : ""}</td>
+      `;
+      tr.addEventListener('click', (e)=>{
+        if(e.target.classList.contains('delbtn') || e.target.closest('.list-sync')) return;
+        openViewer(f);
+      });
+      tbody.appendChild(tr);
+    });
+    contentEl.appendChild(table);
+    contentEl.querySelectorAll('.delbtn').forEach(b=>{
+      b.addEventListener('click', (e)=>{ e.stopPropagation(); confirmDelete(Number(b.dataset.id)); });
+    });
+    contentEl.querySelectorAll('.list-sync.clickable').forEach(b=>{
+      b.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const entry = files.find(x=>x.id===Number(b.dataset.syncid));
+        if(entry) syncFileToDrive(entry);
+      });
+    });
+  }
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- Viewer modal ----------
+  const TEXT_EXTS = ["txt","md","csv","json","log","xml","html","css","js"];
+
+  function attachMediaErrorHandler(box, kind){
+    const el = box.querySelector('#viewerMedia');
+    if(!el) return;
+    el.addEventListener('error', ()=>{
+      const warn = document.createElement('p');
+      warn.style.cssText = "font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--stamp-red);margin-top:10px;text-align:center;";
+      warn.textContent = "Lecture " + kind + " impossible sur cet appareil — essayez « Ouvrir dans un onglet ».";
+      box.appendChild(warn);
+    });
+  }
+
+  function openViewer(f){
+    const isReaderFile = !f.file && f.driveFileId;
+    const mime = (f.file && f.file.type) || "";
+    const ext = extOf(f.name);
+    const isPdf = mime === "application/pdf" || ext === "pdf";
+    const isImage = mime.startsWith("image/");
+    const isText = mime.startsWith("text/") || TEXT_EXTS.includes(ext);
+    const openLink = isReaderFile ? `https://drive.google.com/file/d/${f.driveFileId}/view` : f.url;
+
+    let body = `<div style="text-align:center;padding:20px 0;"><div class="glyph big">⏳</div></div>`;
+
+    const modal = buildModal(`
+      <div class="eyebrow">Consultation</div>
+      <h3>${escapeHtml(f.name)}</h3>
+      <div class="infoline">${CATS[normalizeCategory(f.category)].label} · ${formatSize(f.size)} · ajouté le ${formatDate(f.addedAt)}</div>
+      <div class="previewbox" id="viewerBox">${body}</div>
+      <div class="actions between">
+        ${appRole === 'admin' ? `<button class="btn danger small" id="viewerDelete">Retirer ce fichier</button>` : `<span></span>`}
+        <div style="display:flex;gap:10px;">
+          <button class="btn ghost small" id="viewerOpenTab">Ouvrir dans un onglet</button>
+          <button class="btn small" id="viewerClose">Fermer</button>
+        </div>
+      </div>
+    `, true);
+    const box = modal.querySelector('#viewerBox');
+
+    if(isReaderFile){
+      box.innerHTML = `<iframe src="https://drive.google.com/file/d/${f.driveFileId}/preview" title="${escapeHtml(f.name)}" allow="autoplay" style="width:100%;height:100%;border:1px solid var(--line-soft);background:#fff;"></iframe>`;
+    } else if(f.category === "video"){
+      box.innerHTML = `<video id="viewerMedia" src="${f.url}" controls playsinline webkit-playsinline preload="metadata" style="width:100%;height:100%;max-height:100%;background:#000;"></video>`;
+      attachMediaErrorHandler(box, "vidéo");
+    } else if(f.category === "music"){
+      box.innerHTML = `<div style="text-align:center;padding:20px 0;"><div class="glyph big">🎵</div><audio id="viewerMedia" src="${f.url}" controls preload="metadata" style="width:100%;margin-top:14px;"></audio></div>`;
+      attachMediaErrorHandler(box, "audio");
+    } else if(isImage){
+      box.innerHTML = `<img id="viewerMedia" src="${f.url}" alt="${escapeHtml(f.name)}">`;
+      attachMediaErrorHandler(box, "de l'image");
+    } else if(isPdf){
+      box.innerHTML = `<iframe src="${f.url}" title="${escapeHtml(f.name)}" style="width:100%;height:100%;border:1px solid var(--line-soft);background:#fff;"></iframe>`;
+    } else if(isText && f.file){
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        const txt = String(reader.result).slice(0, 20000);
+        box.innerHTML = `<pre style="width:100%;height:100%;overflow:auto;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:.78rem;padding:14px;margin:0;white-space:pre-wrap;word-break:break-word;">${escapeHtml(txt)}</pre>`;
+      };
+      reader.onerror = ()=>{
+        box.innerHTML = `<div style="text-align:center;padding:30px 0;"><div class="glyph big">${fileTypeInfo(f.file || {name:f.name}).glyph}</div><p style="font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--ink-soft);margin-top:10px;">Impossible de lire ce fichier ici.</p></div>`;
+      };
+      reader.readAsText(f.file);
+    } else {
+      box.innerHTML = `<div style="text-align:center;padding:30px 0;"><div class="glyph big">${fileTypeInfo(f.file || {name:f.name}).glyph}</div>
+              <p style="font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--ink-soft);margin-top:10px;">Ce type de fichier ne peut pas s'afficher ici — ouvrez-le dans un onglet.</p></div>`;
+    }
+
+    modal.querySelector('#viewerOpenTab').addEventListener('click', ()=> window.open(openLink, '_blank'));
+    modal.querySelector('#viewerClose').addEventListener('click', closeModal);
+    const delBtn = modal.querySelector('#viewerDelete');
+    if(delBtn){
+      delBtn.addEventListener('click', ()=>{
+        closeModal();
+        confirmDelete(f.id);
+      });
+    }
+  }
+
+  // ---------- Delete confirm ----------
+  function confirmDelete(id){
+    const f = files.find(x=>x.id===id);
+    if(!f) return;
+    const modal = buildModal(`
+      <div class="eyebrow">Retirer du classeur</div>
+      <h3>Retirer « ${escapeHtml(f.name)} » ?</h3>
+      <div class="infoline">Cette action retire le fichier de l'archive pour cette session.</div>
+      <div class="actions">
+        <button class="btn ghost" id="cancelDel">Annuler</button>
+        <button class="btn danger" id="okDel">Retirer</button>
+      </div>
+    `);
+    modal.querySelector('#cancelDel').addEventListener('click', closeModal);
+    modal.querySelector('#okDel').addEventListener('click', async ()=>{
+      URL.revokeObjectURL(f.url);
+      files = files.filter(x=>x.id!==id);
+      closeModal();
+      renderAll();
+      if(localSaveAvailable){
+        try{ await dbDelete(id); }catch(e){ /* pas grave, retiré au moins de l'affichage */ }
+      }
+      showToast("Fichier retiré du classeur.");
+    });
+  }
+
+  // ---------- Preview-before-add modal ----------
+  let lastPickedCat = DEFAULT_CAT;
+
+  function openPreviewModal(file){
+    pendingFile = file;
+    const kind = fileTypeInfo(file).kind;
+    const url = URL.createObjectURL(file);
+    let previewHtml = "";
+    if(kind === "video"){
+      previewHtml = `<video src="${url}" controls playsinline webkit-playsinline preload="metadata" style="width:100%;max-height:220px;background:#000;"></video>`;
+    } else if(kind === "audio"){
+      previewHtml = `<div style="text-align:center;padding:16px 0;"><div class="glyph big">🎵</div><audio src="${url}" controls style="width:90%;margin-top:10px;"></audio></div>`;
+    } else if(kind === "image"){
+      previewHtml = `<img src="${url}" alt="">`;
+    } else {
+      previewHtml = `<div style="text-align:center;padding:30px 0;"><span class="glyph big">${fileTypeInfo(file).glyph}</span></div>`;
+    }
+
+    const catOptions = Object.entries(CATS).map(([k,v])=>
+      `<option value="${k}" ${k===lastPickedCat?'selected':''}>${v.label}</option>`
+    ).join('');
+
+    const modal = buildModal(`
+      <div class="eyebrow">Aperçu avant classement</div>
+      <h3>Ajouter ce fichier ?</h3>
+      <div class="previewbox">${previewHtml}</div>
+      <div class="field">
+        <label for="renameInput">Nom du fichier</label>
+        <input type="text" id="renameInput" value="${escapeHtml(file.name)}">
+      </div>
+      <div class="field">
+        <label for="catSelect">Pupitre</label>
+        <select id="catSelect">${catOptions}</select>
+      </div>
+      <div class="infoline">${formatSize(file.size)}</div>
+      <div class="actions">
+        <button class="btn ghost" id="cancelAdd">Annuler</button>
+        <button class="btn" id="confirmAdd">Classer le fichier</button>
+      </div>
+    `);
+    modal.querySelector('#cancelAdd').addEventListener('click', ()=>{
+      URL.revokeObjectURL(url);
+      pendingFile = null;
+      closeModal();
+      processQueue();
+    });
+    modal.querySelector('#confirmAdd').addEventListener('click', async ()=>{
+      const nameInput = modal.querySelector('#renameInput').value.trim() || file.name;
+      const cat = normalizeCategory(modal.querySelector('#catSelect').value);
+      lastPickedCat = cat;
+      const entry = {
+        id: idSeq++,
+        folderId: currentFolderId,
+        file,
+        name: nameInput,
+        category: cat,
+        size: file.size,
+        url,
+        thumb: null,
+        addedAt: new Date()
+      };
+      files.push(entry);
+      closeModal();
+      renderAll();
+
+      if(localSaveAvailable){
+        try{
+          const dbId = await dbAdd({ folderId: currentFolderId, name: nameInput, category: cat, size: file.size, addedAt: entry.addedAt.toISOString(), blob: file });
+          entry.id = dbId; // aligne l'id sur celui attribué par la sauvegarde locale
+          showToast("Fichier classé et sauvegardé dans « " + CATS[cat].label + " ».");
+        }catch(e){
+          showToast("Fichier classé (session uniquement — sauvegarde locale indisponible).");
+        }
+      } else {
+        showToast("Fichier classé dans « " + CATS[cat].label + " » (session uniquement).");
+      }
+
+      if(kind === "video"){
+        makeVideoThumb(url, (dataUrl)=>{
+          if(dataUrl){ entry.thumb = dataUrl; if(viewMode==='grid') renderAll(); }
+        });
+      }
+
+      if(driveClientId){
+        entry.driveStatus = 'pending';
+        renderAll();
+        syncFileToDrive(entry);
+      }
+
+      pendingFile = null;
+      processQueue();
+    });
+  }
+
+  // queue multiple files so each gets its own preview step
+  let queue = [];
+  function processQueue(){
+    if(queue.length === 0) return;
+    const next = queue.shift();
+    openPreviewModal(next);
+  }
+
+  // ---------- Modal shell ----------
+  function buildModal(innerHtml, fullscreen){
+    const cls = fullscreen ? "overlay fullscreen" : "overlay";
+    const mcls = fullscreen ? "modal fullscreen" : "modal";
+    modalLayer.innerHTML = `<div class="${cls}" id="overlay"><div class="${mcls}" role="dialog" aria-modal="true">${innerHtml}</div></div>`;
+    const overlay = document.getElementById('overlay');
+    overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeModal(); });
+    document.addEventListener('keydown', escListener);
+    return overlay.querySelector('.modal');
+  }
+  function escListener(e){ if(e.key === "Escape") closeModal(); }
+  function closeModal(){
+    modalLayer.innerHTML = "";
+    document.removeEventListener('keydown', escListener);
+  }
+
+  // ---------- Input handling ----------
+  function handleFiles(fileList){
+    const arr = Array.from(fileList);
+    if(arr.length === 0) return;
+    queue = queue.concat(arr);
+    if(!pendingFile) processQueue();
+  }
+
+  document.getElementById('pickBtn').addEventListener('click', ()=> fileInput.click());
+  fileInput.addEventListener('change', (e)=>{ handleFiles(e.target.files); fileInput.value = ""; });
+
+  ['dragenter','dragover'].forEach(evt=>{
+    dropzone.addEventListener(evt, (e)=>{ e.preventDefault(); dropzone.classList.add('drag'); });
+  });
+  ['dragleave','drop'].forEach(evt=>{
+    dropzone.addEventListener(evt, (e)=>{ e.preventDefault(); dropzone.classList.remove('drag'); });
+  });
+  dropzone.addEventListener('drop', (e)=>{
+    if(e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files);
+  });
+
+  document.getElementById('search').addEventListener('input', (e)=>{
+    searchTerm = e.target.value;
+    renderAll();
+  });
+
+  document.getElementById('gridBtn').addEventListener('click', ()=>{
+    viewMode = "grid";
+    document.getElementById('gridBtn').setAttribute('aria-pressed','true');
+    document.getElementById('listBtn').setAttribute('aria-pressed','false');
+    renderAll();
+  });
+  document.getElementById('listBtn').addEventListener('click', ()=>{
+    viewMode = "list";
+    document.getElementById('listBtn').setAttribute('aria-pressed','true');
+    document.getElementById('gridBtn').setAttribute('aria-pressed','false');
+    renderAll();
+  });
+
+  // ---------- Écran des dossiers ----------
+  function folderFileCount(folderId){
+    return files.filter(f => f.folderId === folderId).length;
+  }
+
+  function voicesPresence(folderId){
+    const present = new Set(files.filter(f => f.folderId === folderId).map(f => normalizeCategory(f.category)));
+    return Object.keys(CATS).map(k => `<i class="${present.has(k) ? 'filled '+k : ''}" title="${CATS[k].label}"></i>`).join('');
+  }
+
+  function renderFoldersScreen(){
+    folderGrid.innerHTML = "";
+    folders.slice().sort((a,b)=> a.createdAt - b.createdAt).forEach(fold=>{
+      const card = document.createElement('div');
+      card.className = "folder-card";
+      card.tabIndex = 0;
+      const count = folderFileCount(fold.id);
+      card.innerHTML = `
+        <span class="fglyph">🎼</span>
+        <div class="fname">${escapeHtml(fold.name)}</div>
+        <div class="fcount">${count} fichier${count>1?'s':''}</div>
+        <div class="fvoices">${voicesPresence(fold.id)}</div>
+        ${appRole === 'admin' ? `<button class="fdel" data-id="${fold.id}">supprimer</button>` : ""}
+      `;
+      card.addEventListener('click', (e)=>{
+        if(e.target.classList.contains('fdel')) return;
+        openFolder(fold.id);
+      });
+      card.addEventListener('keypress', (e)=>{ if(e.key==='Enter') openFolder(fold.id); });
+      folderGrid.appendChild(card);
+    });
+
+    if(appRole === 'admin'){
+      const newCard = document.createElement('div');
+      newCard.className = "folder-card new";
+      newCard.tabIndex = 0;
+      newCard.innerHTML = `<span class="fglyph">＋</span><div class="fname">Nouveau chant</div>`;
+      newCard.addEventListener('click', openNewFolderModal);
+      newCard.addEventListener('keypress', (e)=>{ if(e.key==='Enter') openNewFolderModal(); });
+      folderGrid.appendChild(newCard);
+    } else if(appRole === 'reader'){
+      const refreshCard = document.createElement('div');
+      refreshCard.className = "folder-card new";
+      refreshCard.tabIndex = 0;
+      refreshCard.innerHTML = `<span class="fglyph">↻</span><div class="fname">Actualiser depuis Drive</div>`;
+      refreshCard.addEventListener('click', ()=> loadReaderData());
+      refreshCard.addEventListener('keypress', (e)=>{ if(e.key==='Enter') loadReaderData(); });
+      folderGrid.appendChild(refreshCard);
+      if(folders.length === 0){
+        const empty = document.createElement('div');
+        empty.className = "empty";
+        empty.style.gridColumn = "1 / -1";
+        empty.innerHTML = readerApiKey
+          ? `<div class="glyph">🗄️</div><h3>Rien à afficher</h3><p>Aucun chant trouvé, ou le partage Drive n'est pas encore configuré.</p>`
+          : `<div class="glyph">☁︎</div><h3>Lecture Google Drive non configurée</h3><p>Ouvrez « ☁︎ Google Drive » en haut pour entrer la clé fournie par l'administrateur.</p>`;
+        folderGrid.appendChild(empty);
+      }
+    }
+
+    folderGrid.querySelectorAll('.fdel').forEach(b=>{
+      b.addEventListener('click', (e)=>{ e.stopPropagation(); confirmDeleteFolder(Number(b.dataset.id)); });
+    });
+  }
+
+  function openNewFolderModal(){
+    const modal = buildModal(`
+      <div class="eyebrow">Nouveau chant</div>
+      <h3>Nommer ce chant</h3>
+      <div class="field">
+        <label for="folderNameInput">Titre du chant</label>
+        <input type="text" id="folderNameInput" placeholder="ex. Toi et Moi">
+      </div>
+      <div class="actions">
+        <button class="btn ghost" id="cancelFolder">Annuler</button>
+        <button class="btn" id="confirmFolder">Créer le chant</button>
+      </div>
+    `);
+    const input = modal.querySelector('#folderNameInput');
+    input.focus();
+    modal.querySelector('#cancelFolder').addEventListener('click', closeModal);
+    const submit = async ()=>{
+      const name = input.value.trim();
+      if(!name){ input.focus(); return; }
+      await createFolder(name);
+      closeModal();
+    };
+    modal.querySelector('#confirmFolder').addEventListener('click', submit);
+    input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') submit(); });
+  }
+
+  async function createFolder(name){
+    const fold = { id: folderIdSeq++, name, createdAt: new Date() };
+    folders.push(fold);
+    if(localSaveAvailable){
+      try{
+        const dbId = await dbAdd({ name, createdAt: fold.createdAt.toISOString() }, FOLDERS_STORE);
+        fold.id = dbId;
+      }catch(e){ /* le dossier reste au moins disponible pour cette session */ }
+    }
+    openFolder(fold.id);
+  }
+
+  function confirmDeleteFolder(id){
+    const fold = folders.find(x=>x.id===id);
+    if(!fold) return;
+    const count = folderFileCount(id);
+    const modal = buildModal(`
+      <div class="eyebrow">Supprimer le chant</div>
+      <h3>Supprimer « ${escapeHtml(fold.name)} » ?</h3>
+      <div class="infoline">${count > 0 ? `Les ${count} fichier(s) qu'il contient seront aussi retirés.` : "Ce chant est vide."}</div>
+      <div class="actions">
+        <button class="btn ghost" id="cancelFolderDel">Annuler</button>
+        <button class="btn danger" id="okFolderDel">Supprimer</button>
+      </div>
+    `);
+    modal.querySelector('#cancelFolderDel').addEventListener('click', closeModal);
+    modal.querySelector('#okFolderDel').addEventListener('click', async ()=>{
+      const toRemove = files.filter(f => f.folderId === id);
+      toRemove.forEach(f => URL.revokeObjectURL(f.url));
+      files = files.filter(f => f.folderId !== id);
+      folders = folders.filter(f => f.id !== id);
+      closeModal();
+      renderFoldersScreen();
+      if(localSaveAvailable){
+        try{
+          await Promise.all(toRemove.map(f => dbDelete(f.id)));
+          await dbDelete(id, FOLDERS_STORE);
+        }catch(e){ /* la suppression reste au moins visible dans l'app */ }
+      }
+      showToast("Dossier supprimé.");
+    });
+  }
+
+  function openFolder(id){
+    currentFolderId = id;
+    activeCat = "all";
+    searchTerm = "";
+    document.getElementById('search').value = "";
+    const fold = folders.find(f=>f.id===id);
+    folderTitle.textContent = fold ? fold.name : "Dossier";
+    foldersScreen.style.display = "none";
+    folderScreen.style.display = "block";
+    searchwrap.style.display = "block";
+    dropzone.style.display = appRole === 'admin' ? "block" : "none";
+    renderAll();
+  }
+
+  document.getElementById('backToFolders').addEventListener('click', ()=>{
+    currentFolderId = null;
+    folderScreen.style.display = "none";
+    foldersScreen.style.display = "block";
+    searchwrap.style.display = "none";
+    renderFoldersScreen();
+  });
+
+  // ---------- Réglages Google Drive ----------
+  function openDriveSettings(){
+    if(appRole === 'reader'){
+      openReaderSettings();
+      return;
+    }
+    const modal = buildModal(`
+      <div class="eyebrow">Réglages</div>
+      <h3>Google Drive — Administrateur</h3>
+      <div class="infoline">Statut : ${driveConnected ? "connecté" : (driveClientId ? "non connecté" : "non configuré")}${(driveConnected && connectedAccountEmail) ? " — " + escapeHtml(connectedAccountEmail) : ""}</div>
+      <div class="field">
+        <label for="clientIdInput">Client ID Google (OAuth)</label>
+        <input type="text" id="clientIdInput" placeholder="xxxxxxxx.apps.googleusercontent.com" value="${driveClientId ? escapeHtml(driveClientId) : ''}">
+      </div>
+      <div class="infoline">L'origine JavaScript autorisée dans Google Cloud doit correspondre exactement à l'adresse où cette app est hébergée.</div>
+      <div class="field">
+        <button class="btn small" id="permanentConnectBtn" style="width:100%;">🔒 Connexion permanente (ne plus jamais se reconnecter)</button>
+      </div>
+      <div class="infoline">Nécessite d'avoir déployé les fonctions serveur de l'app (voir le guide fourni). Sans ça, ce bouton ne fera rien.</div>
+      ${driveArchiveRootId ? `
+      <div class="field">
+        <label>ID du dossier à partager avec vos lecteurs</label>
+        <input type="text" id="rootIdDisplay" readonly value="${escapeHtml(driveArchiveRootId)}">
+      </div>
+      <div class="infoline">Dans Google Drive, partagez ce dossier « Anyone with the link → Lecteur », puis donnez cet ID + votre clé API à vos lecteurs.</div>
+      ` : `<div class="infoline">L'ID du dossier à partager apparaîtra ici après votre premier envoi de fichier.</div>`}
+      ${driveConnected ? `
+      <div class="field">
+        <button class="btn ghost small" id="driveSyncBtn" style="width:100%;">↻ Récupérer les nouveautés depuis Drive</button>
+      </div>
+      <div class="infoline">Utile si vous ajoutez des fichiers depuis un autre appareil, avec le même compte.</div>
+      ` : ``}
+      <div class="actions between">
+        <button class="btn ghost small" id="driveDisconnectBtn" ${driveConnected ? '' : 'style="visibility:hidden;"'}>Se déconnecter</button>
+        <div style="display:flex;gap:10px;">
+          <button class="btn ghost small" id="driveCloseBtn">Fermer</button>
+          <button class="btn small" id="driveSaveBtn">Enregistrer</button>
+        </div>
+      </div>
+      <div class="infoline" style="margin-top:16px;"><a href="#" id="switchToReader" style="color:var(--ink-soft);">Je suis en fait un lecteur →</a></div>
+    `);
+    modal.querySelector('#driveCloseBtn').addEventListener('click', closeModal);
+    modal.querySelector('#permanentConnectBtn').addEventListener('click', startPermanentConnect);
+    if(driveConnected){
+      modal.querySelector('#driveSyncBtn').addEventListener('click', async ()=>{
+        closeModal();
+        await pullFromDriveForAdmin(false);
+      });
+    }
+    modal.querySelector('#driveDisconnectBtn').addEventListener('click', ()=>{
+      disconnectDrive();
+      closeModal();
+    });
+    modal.querySelector('#driveSaveBtn').addEventListener('click', async ()=>{
+      const val = modal.querySelector('#clientIdInput').value.trim();
+      if(!val){ showToast("Entrez un Client ID."); return; }
+      driveClientId = val;
+      await setSetting('driveClientId', val);
+      updateDriveStatusUI();
+      await initGis(val);
+      closeModal();
+      connectDrive();
+    });
+    modal.querySelector('#switchToReader').addEventListener('click', async (e)=>{
+      e.preventDefault();
+      appRole = 'reader';
+      await setSetting('appRole', 'reader');
+      files = []; folders = [];
+      dropzone.style.display = "none";
+      updateDriveStatusUI();
+      closeModal();
+      openReaderSettings();
+    });
+  }
+
+  function openReaderSettings(){
+    const modal = buildModal(`
+      <div class="eyebrow">Réglages</div>
+      <h3>Google Drive — Lecteur</h3>
+      <div class="infoline">Collez les informations fournies par votre administrateur.</div>
+      <div class="field">
+        <label for="readerKeyInput">Clé API Google</label>
+        <input type="text" id="readerKeyInput" placeholder="AIzaSy…" value="${readerApiKey ? escapeHtml(readerApiKey) : ''}">
+      </div>
+      <div class="field">
+        <label for="readerFolderInput">ID du dossier partagé</label>
+        <input type="text" id="readerFolderInput" placeholder="ex. 1AbCdEfGhIjKlmNoPQRstuv" value="${readerRootFolderId ? escapeHtml(readerRootFolderId) : ''}">
+      </div>
+      <div class="actions between">
+        <span></span>
+        <div style="display:flex;gap:10px;">
+          <button class="btn ghost small" id="readerCloseBtn">Fermer</button>
+          <button class="btn small" id="readerSaveBtn">Enregistrer et charger</button>
+        </div>
+      </div>
+      <div class="infoline" style="margin-top:16px;"><a href="#" id="switchToAdmin" style="color:var(--ink-soft);">Je suis en fait l'administrateur →</a></div>
+    `);
+    modal.querySelector('#readerCloseBtn').addEventListener('click', closeModal);
+    modal.querySelector('#readerSaveBtn').addEventListener('click', async ()=>{
+      const key = modal.querySelector('#readerKeyInput').value.trim();
+      const rawFolder = modal.querySelector('#readerFolderInput').value.trim();
+      if(!key || !rawFolder){ showToast("Entrez la clé API et l'ID du dossier."); return; }
+      const folderId = extractDriveFolderId(rawFolder);
+      if(!folderId){ showToast("L'ID du dossier n'a pas pu être lu — recollez-le."); return; }
+      readerApiKey = key;
+      readerRootFolderId = folderId;
+      await setSetting('readerApiKey', key);
+      await setSetting('readerRootFolderId', folderId);
+      updateDriveStatusUI();
+      closeModal();
+      await loadReaderData();
+      startReaderPolling();
+    });
+    modal.querySelector('#switchToAdmin').addEventListener('click', async (e)=>{
+      e.preventDefault();
+      appRole = 'admin';
+      await setSetting('appRole', 'admin');
+      stopReaderPolling();
+      files = []; folders = [];
+      updateDriveStatusUI();
+      closeModal();
+      await loadAdminLocalData();
+      renderFoldersScreen();
+    });
+  }
+
+  document.getElementById('driveSettingsBtn').addEventListener('click', openDriveSettings);
+
+  // ---------- Thème clair / sombre ----------
+  function applyThemeIcons(theme){
+    document.getElementById('themeIconSun').style.display = theme === 'dark' ? 'none' : 'block';
+    document.getElementById('themeIconMoon').style.display = theme === 'dark' ? 'block' : 'none';
+  }
+  (function initThemeToggle(){
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    applyThemeIcons(current);
+    document.getElementById('themeToggle').addEventListener('click', ()=>{
+      const now = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', now);
+      applyThemeIcons(now);
+      try{ localStorage.setItem('archive-theme', now); }catch(e){}
+    });
+  })();
+
+  // ---------- Démarrage : recharger le classeur sauvegardé ----------
+  async function loadAdminLocalData(){
+    try{
+      const folderRecords = await dbGetAll(FOLDERS_STORE);
+      localSaveAvailable = true;
+      folderRecords.forEach(rec=>{
+        folders.push({
+          id: rec.id, name: rec.name, createdAt: new Date(rec.createdAt),
+          driveFolderId: rec.driveFolderId || null,
+          driveSubfolders: rec.driveSubfolders || null
+        });
+        folderIdSeq = Math.max(folderIdSeq, rec.id + 1);
+      });
+
+      const records = await dbGetAll();
+      let needsMigration = false;
+      records.forEach(rec=>{
+        if(rec.folderId === undefined || rec.folderId === null) needsMigration = true;
+      });
+      let migrationFolderId = null;
+      if(needsMigration){
+        if(folders.length === 0){
+          const fold = { id: folderIdSeq++, name:"Général", createdAt:new Date() };
+          try{
+            const dbId = await dbAdd({ name: fold.name, createdAt: fold.createdAt.toISOString() }, FOLDERS_STORE);
+            fold.id = dbId;
+          }catch(e){ /* reste au moins en mémoire */ }
+          folders.push(fold);
+          migrationFolderId = fold.id;
+        } else {
+          migrationFolderId = folders[0].id;
+        }
+      }
+
+      records.forEach(rec=>{
+        const url = URL.createObjectURL(rec.blob);
+        const folderId = (rec.folderId === undefined || rec.folderId === null) ? migrationFolderId : rec.folderId;
+        const entry = {
+          id: rec.id,
+          folderId,
+          file: rec.blob,
+          name: rec.name,
+          category: rec.category,
+          size: rec.size,
+          url,
+          thumb: null,
+          addedAt: new Date(rec.addedAt),
+          driveStatus: rec.driveStatus || null,
+          driveFileId: rec.driveFileId || null
+        };
+        files.push(entry);
+        idSeq = Math.max(idSeq, rec.id + 1);
+        if(entry.category === "video"){
+          makeVideoThumb(url, (dataUrl)=>{
+            if(dataUrl){ entry.thumb = dataUrl; if(currentFolderId===folderId && viewMode==='grid') renderAll(); }
+          });
+        }
+      });
+    }catch(e){
+      localSaveAvailable = false;
+    }
+
+    driveClientId = await getSetting('driveClientId');
+    driveArchiveRootId = await getSetting('driveArchiveRootId');
+    updateDriveStatusUI();
+    if(driveClientId){
+      await initGis(driveClientId);
+      armFirstInteractionReconnect();
+    }
+  }
+
+  // La reconnexion silencieuse ne fonctionne pas toujours sans geste utilisateur selon le
+  // navigateur — on multiplie donc les occasions de la tenter pour qu'elle passe le plus
+  // souvent possible inaperçue : immédiatement, au retour sur l'app, et périodiquement.
+  let reconnectArmed = false;
+  function attemptSilentReconnect(){
+    if(!driveClientId || !gisTokenClient || driveConnected) return;
+    ensureToken().then(()=>{ retrySyncQueue(); }).catch(()=>{ /* sera retenté automatiquement */ });
+  }
+
+  function armFirstInteractionReconnect(){
+    // Tentative immédiate, sans attendre de geste — fonctionne dans de nombreux contextes
+    // (app installée, session Google déjà active dans ce navigateur).
+    attemptSilentReconnect();
+
+    if(reconnectArmed) return;
+    reconnectArmed = true;
+
+    // Nouvelle tentative dès que l'app redevient active (on rouvre l'app installée, on
+    // revient d'un autre onglet, on rallume l'écran du téléphone).
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.visibilityState === 'visible') attemptSilentReconnect();
+    });
+    window.addEventListener('focus', attemptSilentReconnect);
+    window.addEventListener('pageshow', attemptSilentReconnect);
+
+    // Filet de sécurité : le tout premier geste sur la page compte comme une interaction
+    // utilisateur valable pour les navigateurs les plus stricts.
+    const onFirstInteraction = ()=>{
+      document.removeEventListener('click', onFirstInteraction, true);
+      document.removeEventListener('touchstart', onFirstInteraction, true);
+      attemptSilentReconnect();
+    };
+    document.addEventListener('click', onFirstInteraction, true);
+    document.addEventListener('touchstart', onFirstInteraction, true);
+
+    // Renouvellement proactif : on retente avant l'expiration du jeton (environ toutes les
+    // 4 minutes) plutôt que d'attendre que la connexion tombe pendant une utilisation active.
+    setInterval(()=>{
+      if(document.visibilityState === 'visible') attemptSilentReconnect();
+    }, 4 * 60 * 1000);
+  }
+
+  function openRoleChooser(){
+    const modal = buildModal(`
+      <div class="eyebrow">Bienvenue</div>
+      <h3>Comment allez-vous utiliser ce classeur ?</h3>
+      <div class="infoline">Vous pourrez changer ce choix plus tard dans les réglages.</div>
+      <div class="actions" style="flex-direction:column; gap:10px; align-items:stretch;">
+        <button class="btn" id="roleAdminBtn" style="width:100%;">Administrateur — j'ajoute et gère les fichiers</button>
+        <button class="btn ghost" id="roleReaderBtn" style="width:100%;">Lecteur — je consulte seulement</button>
+      </div>
+    `);
+    modal.querySelector('#roleAdminBtn').addEventListener('click', async ()=>{
+      appRole = 'admin';
+      await setSetting('appRole', 'admin');
+      closeModal();
+      await loadAdminLocalData();
+      renderFoldersScreen();
+    });
+    modal.querySelector('#roleReaderBtn').addEventListener('click', async ()=>{
+      appRole = 'reader';
+      await setSetting('appRole', 'reader');
+      closeModal();
+      renderFoldersScreen();
+      openDriveSettings();
+    });
+  }
+
+  async function init(){
+    appRole = await getSetting('appRole');
+    readerApiKey = await getSetting('readerApiKey');
+    readerRootFolderId = await getSetting('readerRootFolderId');
+
+    if(appRole === 'admin'){
+      await loadAdminLocalData();
+      renderFoldersScreen();
+    } else if(appRole === 'reader'){
+      dropzone.style.display = "none";
+      updateDriveStatusUI();
+      await loadReaderData();
+      if(readerApiKey && readerRootFolderId) startReaderPolling();
+    } else {
+      renderFoldersScreen();
+      openRoleChooser();
+    }
+  }
+
+  init();
+})();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
